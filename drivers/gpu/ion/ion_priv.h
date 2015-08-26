@@ -50,7 +50,11 @@ struct ion_buffer *ion_handle_buffer(struct ion_handle *handle);
  * @kmap_cnt:		number of times the buffer is mapped to the kernel
  * @vaddr:		the kenrel mapping if kmap_cnt is not zero
  * @dmap_cnt:		number of times the buffer is mapped for dma
- * @sg_table:		the sg table for the buffer if dmap_cnt is not zero
+ * @sg_table:		the sg table for the buffer.  Note that if you need
+ *			an sg_table for this buffer, you should likely be
+ *			using Ion as a DMA Buf exporter and using
+ *			dma_buf_map_attachment rather than trying to use this
+ *			field directly.
  * @pages:		flat array of pages in the buffer -- used by fault
  *			handler and only valid for buffers that are faulted in
  * @vmas:		list of vma's mapping this buffer
@@ -251,10 +255,9 @@ int ion_heap_map_user(struct ion_heap *, struct ion_buffer *,
 			struct vm_area_struct *);
 int ion_heap_buffer_zero(struct ion_buffer *buffer);
 
-int msm_ion_heap_high_order_page_zero(struct page *page, int order,
-					bool cached);
+int msm_ion_heap_high_order_page_zero(struct page *page, int order);
 int msm_ion_heap_buffer_zero(struct ion_buffer *buffer);
-int msm_ion_heap_pages_zero(struct page **pages, int num_pages, pgprot_t prot);
+int msm_ion_heap_pages_zero(struct page **pages, int num_pages);
 int msm_ion_heap_alloc_pages_mem(struct pages_mem *pages_mem);
 void msm_ion_heap_free_pages_mem(struct pages_mem *pages_mem);
 
@@ -398,7 +401,6 @@ struct ion_page_pool {
 	gfp_t gfp_mask;
 	unsigned int order;
 	struct plist_node list;
-	bool cached;
 };
 
 struct ion_page_pool *ion_page_pool_create(gfp_t gfp_mask, unsigned int order);
